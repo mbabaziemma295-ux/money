@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Software Dev - Payment System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* --- CSS STYLES (Dark Mode) --- */
+:root {
+  --bg-dark: #1f1f2e;
+  --panel: #162447;
+  --text-main: #ffffff;
+  --accent-cyan: #00f0ff;
+  --accent-green: #22c55e; /* Abishyuye */
+  --accent-yellow: #eab308; /* Abatararangije */
+  --accent-red: #ef4444; /* Abatarishyuye */
+  --accent-dark-red: #991b1b; /* Abarengeje akenewe */
+  --border: #334155;
+}
+
+body{
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  margin: 0;
+  padding-bottom: 50px;
+}
+
+/* --- BUTTONS --- */
+.back-btn {
+  position: fixed; top: 20px; left: 20px; z-index: 200;
+  background: var(--accent-cyan); color: var(--bg-dark);
+  width: 45px; height: 45px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; text-decoration: none; cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6); border: 2px solid white;
+}
+
+.reset-btn {
+  position: fixed; top: 80px; left: 20px; z-index: 200;
+  background: var(--accent-yellow); color: #000;
+  padding: 5px 10px; border-radius: 4px; font-size: 12px;
+  font-weight: bold; cursor: pointer; border: 1px solid white;
+}
+
+/* NAVIGATION */
+nav{
+  background: var(--panel); padding:15px; text-align: center;
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+}
+nav a{
+  color: var(--accent-cyan); margin:0 15px; text-decoration: none;
+  font-weight: bold; text-transform: uppercase; font-size: 12px;
+  cursor: pointer; transition: all 0.3s;
+}
+nav a:hover, nav a.active{
+  color: var(--accent-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  border-bottom: 2px solid var(--accent-cyan);
+}
+
+/* HEADINGS */
+h2{ text-align:center; margin:30px 0 10px; color: var(--text-main); }
+h3{ text-align:center; color: var(--accent-cyan); margin-top:30px; font-size: 1.2rem;}
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
+
+/* SECTIONS */
+.page-section { display: none; animation: fadeIn 0.4s ease; padding: 10px; padding-top: 40px; }
+.page-section.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* TABLE STYLES */
+.program-section{
+  width:95%; max-width: 1000px; margin:20px auto;
+  background: rgba(22, 36, 71, 0.5); border-radius: 8px; padding: 15px;
+  border: 1px solid var(--border);
+}
+table{ width:100%; border-collapse:collapse; margin-top: 10px; }
+th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:center; }
+th{ background: #0f172a; color: var(--accent-cyan); font-size:12px; letter-spacing: 1px; }
+
+/* STATUS COLORS */
+.status-abisyuye { color: var(--accent-green); font-weight:bold; }
+.status-abarengeje { color: #f87171; font-weight:bold; background: rgba(153, 27, 27, 0.3); border-radius: 6px; padding: 4px 10px; }
+.status-abatararangije { color: var(--accent-yellow); font-weight:bold; background: rgba(234, 179, 8, 0.15); border-radius: 6px; padding: 4px 10px; }
+.status-abatarishyuye { color: var(--accent-red); font-weight:bold; background: rgba(239, 68, 68, 0.15); border-radius: 6px; padding: 4px 10px; }
+
+/* FORM & DASHBOARD */
+.form-container { width: 90%; max-width: 500px; margin: 40px auto; background: var(--panel); padding: 30px; border-radius: 8px; border: 1px solid var(--border); }
+.form-control { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 90%; max-width: 1000px; margin: 0 auto; }
+.stat-card { background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+
+#toast { visibility: hidden; min-width: 250px; background-color: var(--accent-green); color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); }
+#toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+</style>
+</head>
+<body>
+
+<a href="#" onclick="location.reload()" class="back-btn" title="Refresh">🔄</a>
+<div class="reset-btn" onclick="forceResetData()">🔄 Reset Data</div>
+
+<nav>
+  <a onclick="showSection('home')" id="nav-home" class="active">📚 Home</a>
+  <a onclick="showSection('money')" id="nav-money">💰 Update</a>
+  <a onclick="showSection('payment')" id="nav-payment">✅ Paid</a>
+  <a onclick="showSection('pending')" id="nav-pending">⏳ Issues</a>
+  <a onclick="showSection('dashboard')" id="nav-dashboard">📊 Dash</a>
+</nav>
+
+<section id="home" class="page-section active">
+  <h2>Software Development (L3-L5)</h2>
+  <div class="subtitle">Students grouped by Level (L3: 170k | L4-L5: 130k)</div>
+  <div id="programContainer"></div>
+</section>
+
+<section id="money" class="page-section">
+  <h2>💰 Update Payment</h2>
+  <div class="subtitle">Select student and add payment amount</div>
+  <div class="form-container">
+    <form id="paymentForm" onsubmit="handlePaymentSubmit(event)">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="color:var(--accent-cyan); display:block; margin-bottom:8px;">Select Student</label>
+        <select id="studentSelect" class="form-control" onchange="loadStudentDetails()">
+          <option value="">-- Choose Student --</option>
+        </select>
+      </div>
+      <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Fees:</span><span id="displayFees" style="font-weight:bold;">0</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Already Paid:</span><span id="displayPaid" style="color:var(--accent-cyan); font-weight:bold;">0</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Balance:</span><span id="displayBalance" style="color:var(--accent-yellow); font-weight:bold;">0</span></div>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="color:var(--accent-cyan); display:block; margin-bottom:8px;">Amount to Add (RWF)</label>
+        <input type="number" id="amountInput" class="form-control" placeholder="e.g. 50000" required>
+      </div>
+      <button type="submit" class="form-control" style="background:var(--accent-cyan); color:black; font-weight:bold; cursor:pointer;">💾 Update & Save</button>
+    </form>
+  </div>
+</section>
+
+<section id="payment" class="page-section">
+  <h2>✅ Abishyuye (Paid Full)</h2>
+  <div id="fullPaymentContainer"></div>
+</section>
+
+<section id="pending" class="page-section">
+  <h2>❌ Abatarishyuye & Abarengeje</h2>
+  <div id="pendingContainer"></div>
+</section>
+
+<section id="dashboard" class="page-section">
+  <h2>📊 Financial Dashboard</h2>
+  <div class="dashboard-grid">
+    <div class="stat-card"><h4>Total Students</h4><div class="value" id="dash-students" style="font-size:1.8rem; font-weight:bold;">0</div></div>
+    <div class="stat-card"><h4>Collected</h4><div class="value" id="dash-collected" style="font-size:1.8rem; font-weight:bold; color:var(--accent-green);">0</div></div>
+    <div class="stat-card"><h4>Outstanding</h4><div class="value" id="dash-balance" style="font-size:1.8rem; font-weight:bold; color:var(--accent-red);">0</div></div>
+  </div>
+</section>
+
+<div id="toast">Payment Updated Successfully!</div>
+
+<script>
+const ACTIVE_TRADE = "Software Development";
+
+// Gena amafaranga hakurikijwe Level
+function getFees(level) {
+    return (level === "L3") ? 170000 : 130000;
+}
+
+const initialPrograms = {
+  "Software Development": {
+    "L3": ["Manzi Mugisha", "Keza Nimbona", "Irakoze Mugwaneza", "Niyonzima Eric", "Mwiseneza Patrick", "Adjira Brakan", "Batuma Hope", "Kevin D"],
+    "L4": ["Kamanzi Jean Pierre", "Uwase Amina", "Ndayisaba Felix", "Mukamusoni Clarisse", "Bizimungu Christian", "Lucie", "Alice Keza", "Alain Mugisha"],
+    "L5": ["Gasana Olivier", "Hirwa Emmanuel", "Niyitanga Sarah", "Mukiza Peace", "Kwizera John", "Hope R", "Sarah N", "Gisa J"]
+  }
+};
+
+let students = [];
+
+window.onload = function() {
+  loadData();
+  renderTrades();
+  populateStudentDropdown();
+};
+
+function loadData() {
+  const stored = localStorage.getItem('software_payment_data_v2');
+  if (stored) {
+    students = JSON.parse(stored);
+  } else {
+    generateInitialData();
+  }
+}
+
+function generateInitialData() {
+  students = [];
+  for(let trade in initialPrograms){
+    for(let level in initialPrograms[trade]){
+      let fee = getFees(level);
+      initialPrograms[trade][level].forEach(name => {
+        let paid = Math.random() > 0.7 ? fee : 0;
+        students.push({
+          name, trade, level, fees: fee, paid,
+          balance: fee - paid,
+          status: paid >= fee ? "Abishyuye" : (paid === 0 ? "Abatarishyuye" : "Abatararangije")
+        });
+      });
+    }
+  }
+  saveData();
+}
+
+function saveData() { localStorage.setItem('software_payment_data_v2', JSON.stringify(students)); }
+
+function forceResetData() {
+  if(confirm("Are you sure? This will reload all data with new 170k/130k rates.")){
+    localStorage.removeItem('software_payment_data_v2');
+    location.reload();
+  }
+}
+
+function showSection(id) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id === 'home') renderTrades();
+  if(id === 'payment') renderFullPayments();
+  if(id === 'pending') renderPendingPayments();
+  if(id === 'dashboard') renderDashboard();
+}
+
+function renderTrades() {
+  let container = document.getElementById("programContainer");
+  container.innerHTML = "";
+  ["L3", "L4", "L5"].forEach(level => {
+    let list = students.filter(s => s.level === level);
+    let html = `<div class="program-section"><h3>Level ${level} (Fees: ${getFees(level).toLocaleString()} RWF)</h3><table>
+      <thead><tr><th>Name</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
+    list.forEach(s => {
+      let cls = s.status === "Abishyuye" ? "status-abisyuye" : (s.status === "Abatararangije" ? "status-abatararangije" : "status-abatarishyuye");
+      html += `<tr><td>${s.name}</td><td>${s.paid.toLocaleString()}</td><td>${s.balance.toLocaleString()}</td><td class="${cls}">${s.status}</td>
+      <td><button onclick="prefillUpdate('${s.name}','${s.level}')" style="cursor:pointer; background:none; border:1px solid var(--accent-cyan); color:var(--accent-cyan); border-radius:4px;">💰</button></td></tr>`;
+    });
+    container.innerHTML += html + "</tbody></table></div>";
+  });
+}
+
+function populateStudentDropdown() {
+  let select = document.getElementById("studentSelect");
+  select.innerHTML = '<option value="">-- Choose Student --</option>';
+  students.forEach(s => {
+    let opt = document.createElement('option');
+    opt.value = s.name + "||" + s.level;
+    opt.innerText = `${s.name} (${s.level})`;
+    select.appendChild(opt);
+  });
+}
+
+function loadStudentDetails() {
+  let val = document.getElementById("studentSelect").value;
+  if(!val) return;
+  let [name, level] = val.split("||");
+  let s = students.find(st => st.name === name && st.level === level);
+  if(s) {
+    document.getElementById("displayFees").innerText = s.fees.toLocaleString();
+    document.getElementById("displayPaid").innerText = s.paid.toLocaleString();
+    document.getElementById("displayBalance").innerText = s.balance.toLocaleString();
+  }
+}
+
+function handlePaymentSubmit(e) {
+  e.preventDefault();
+  let val = document.getElementById("studentSelect").value;
+  let amt = parseInt(document.getElementById("amountInput").value);
+  if(!val || isNaN(amt)) return;
+  let [name, level] = val.split("||");
+  let idx = students.findIndex(st => st.name === name && st.level === level);
+  if(idx !== -1) {
+    students[idx].paid += amt;
+    students[idx].balance = students[idx].fees - students[idx].paid;
+    if(students[idx].balance < 0) students[idx].balance = 0;
+    students[idx].status = students[idx].paid >= students[idx].fees ? "Abishyuye" : "Abatararangije";
+    saveData();
+    showToast("Updated Successfully!");
+    document.getElementById("amountInput").value = "";
+    loadStudentDetails();
+  }
+}
+
+function prefillUpdate(name, level) {
+  showSection('money');
+  document.getElementById("studentSelect").value = name + "||" + level;
+  loadStudentDetails();
+}
+
+function renderFullPayments() {
+  let list = students.filter(s => s.status === "Abishyuye");
+  document.getElementById("fullPaymentContainer").innerHTML = list.length ? renderSimpleTable(list) : "<p style='text-align:center'>No full payments.</p>";
+}
+
+function renderPendingPayments() {
+  let list = students.filter(s => s.status !== "Abishyuye");
+  document.getElementById("pendingContainer").innerHTML = list.length ? renderSimpleTable(list) : "<p style='text-align:center'>No issues.</p>";
+}
+
+function renderSimpleTable(list) {
+  let html = `<div class="program-section"><table><thead><tr><th>Name</th><th>Level</th><th>Paid</th><th>Status</th></tr></thead><tbody>`;
+  list.forEach(s => {
+    html += `<tr><td>${s.name}</td><td>${s.level}</td><td>${s.paid.toLocaleString()}</td><td>${s.status}</td></tr>`;
+  });
+  return html + "</tbody></table></div>";
+}
+
+function renderDashboard() {
+  let coll = students.reduce((a, b) => a + b.paid, 0);
+  let bal = students.reduce((a, b) => a + b.balance, 0);
+  document.getElementById("dash-students").innerText = students.length;
+  document.getElementById("dash-collected").innerText = coll.toLocaleString();
+  document.getElementById("dash-balance").innerText = bal.toLocaleString();
+}
+
+function showToast(msg) {
+  let x = document.getElementById("toast"); x.innerText = msg; x.className = "show";
+  setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+}
+</script>
+</body>
+</html>

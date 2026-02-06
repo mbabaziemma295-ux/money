@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#1f1f2e,#162447);
+    font-family:Arial,sans-serif;
+    color:white;
+}
+.box{
+    background:rgba(0,0,0,0.7);
+    padding:30px;
+    border-radius:12px;
+    width:300px;
+    text-align:center;
+}
+input,button{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border-radius:8px;
+    border:none;
+}
+button{
+    background:#2a43b1;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{opacity:0.9}
+a{color:#00f0ff;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Sign Up</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="signUp()">Create Account</button>
+    <p><a href="login.html">Already have an account?</a></p>
+</div>
+
+<script>
+function signUp(){
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if(email === "" || password === ""){
+        alert("All fields are required");
+        return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+
+    if(users.some(u => u.email === email)){
+        alert("Account already exists");
+        return;
+    }
+
+    users.push({ email, password });
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Account created successfully!");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
