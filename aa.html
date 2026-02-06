@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Fees System | SD Edition</title>
+
+<style>
+:root{
+--bg:#0f172a;--card:#1e293b;--text:#f8fafc;
+--cyan:#22d3ee;--green:#4ade80;--yellow:#fbbf24;--red:#f87171;--border:#334155;
+}
+body{margin:0;font-family:Segoe UI;background:var(--bg);color:var(--text)}
+nav{display:flex;justify-content:center;gap:10px;background:var(--card);border-bottom:2px solid var(--cyan)}
+nav a{padding:15px 25px;color:white;font-weight:bold;cursor:pointer;text-decoration:none}
+nav a.active{background:var(--cyan);color:black}
+.page{display:none;padding:25px;max-width:1400px;margin:auto}
+.page.active{display:block}
+
+input,select,button{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:white}
+button{background:var(--cyan);color:black;font-weight:bold;cursor:pointer}
+
+.table-box{background:var(--card);padding:10px;border-radius:10px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:center}
+th{background:#334155;color:var(--cyan)}
+
+.st-PAID{color:var(--green);font-weight:bold}
+.st-NOT-PAID{color:var(--red);font-weight:bold}
+.st-NOT-ENOUGH-MONEY{color:var(--yellow);font-weight:bold}
+.st-OVER-PAID{background:var(--cyan);color:black;padding:2px 6px;border-radius:4px;font-weight:bold}
+
+.card{background:var(--card);padding:25px;border-radius:15px;border:1px solid var(--border);max-width:500px;margin:auto}
+</style>
+</head>
+
+<body>
+
+<nav>
+<a onclick="show('home')" id="n-home" class="active">HOME</a>
+<a onclick="show('new')" id="n-new">ADD STUDENT</a>
+<a onclick="show('pay')" id="n-pay">PAYMENT</a>
+<a onclick="show('dash')" id="n-dash">DASHBOARD</a>
+</nav>
+
+<!-- HOME -->
+<section id="home" class="page active">
+<h2>STUDENTS LIST</h2>
+<input id="search" placeholder="🔍 Search name..." onkeyup="render()">
+<div id="list"></div>
+</section>
+
+<!-- ADD STUDENT -->
+<section id="new" class="page">
+<div class="card">
+<h2>Register Student</h2>
+<form id="fs-form" action="https://formspree.io/f/xreazkkj" method="POST">
+
+<input type="email" name="email" id="email" placeholder="Student Email" required>
+<input type="text" id="name" name="name" placeholder="Full Name" required>
+
+<select id="level" name="level">
+<option value="Level 3">Level 3 (170,000)</option>
+<option value="Level 4">Level 4 (130,000)</option>
+<option value="Level 5">Level 5 (130,000)</option>
+</select>
+
+<select id="term" name="term">
+<option value="1">Term 1</option>
+<option value="2">Term 2</option>
+<option value="3">Term 3</option>
+</select>
+
+<input type="number" id="money" name="money" placeholder="Initial Payment">
+
+<button type="submit" id="btn">SAVE & SEND EMAIL</button>
+</form>
+</div>
+</section>
+
+<!-- PAYMENT -->
+<section id="pay" class="page">
+<div class="card">
+<h2>Submit Payment</h2>
+<select id="student"></select>
+<input type="number" id="amount" placeholder="Amount">
+<button onclick="pay()">CONFIRM</button>
+</div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dash" class="page">
+<div style="display:flex;gap:20px">
+<div class="card" style="flex:1;text-align:center">
+<h3>COLLECTED</h3>
+<h1 id="col" style="color:var(--green)">0</h1>
+</div>
+<div class="card" style="flex:1;text-align:center">
+<h3>DEBT</h3>
+<h1 id="debt" style="color:var(--red)">0</h1>
+</div>
+</div>
+</section>
+
+<script>
+const fee=l=>l==="Level 3"?170000:130000;
+let students=JSON.parse(localStorage.getItem("fees_sys"))||[];
+
+function save(){localStorage.setItem("fees_sys",JSON.stringify(students))}
+
+function calc(s,amt){
+s.paid+=amt;
+let r=s.paid,f=fee(s.level);
+[s.t1,s.t2,s.t3].forEach(t=>{
+if(r>=f){t.p=f;t.b=0;t.s="PAID";r-=f}
+else if(r>0){t.p=r;t.b=f-r;t.s="NOT ENOUGH MONEY";r=0}
+else{t.p=0;t.b=f;t.s="NOT PAID"}
+});
+}
+
+function render(){
+let q=search.value.toLowerCase(),html="";
+["Level 3","Level 4","Level 5"].forEach(l=>{
+let arr=students.filter(s=>s.level===l && s.name.toLowerCase().includes(q));
+if(arr.length){
+html+=`<h3>${l}</h3><div class="table-box"><table>
+<tr><th>Name</th><th>T1</th><th>T2</th><th>T3</th></tr>`;
+arr.forEach(s=>{
+html+=`<tr><td>${s.name}</td>
+<td class="st-${s.t1.s.replace(/ /g,"-")}">${s.t1.s}</td>
+<td class="st-${s.t2.s.replace(/ /g,"-")}">${s.t2.s}</td>
+<td class="st-${s.t3.s.replace(/ /g,"-")}">${s.t3.s}</td></tr>`;
+});
+html+="</table></div>";
+}
+});
+list.innerHTML=html;
+fill();
+}
+
+function fill(){
+student.innerHTML='<option value="">Choose student</option>';
+students.forEach(s=>student.innerHTML+=`<option>${s.name}</option>`);
+}
+
+function pay(){
+let s=students.find(x=>x.name===student.value);
+let v=parseInt(amount.value);
+if(!s||isNaN(v))return;
+calc(s,v);save();render();show("home");
+amount.value="";
+}
+
+function show(id){
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.getElementById("n-"+id).classList.add("active");
+
+if(id==="dash"){
+let c=0,d=0;
+students.forEach(s=>{
+c+=s.paid;
+[s.t1,s.t2,s.t3].forEach(t=>d+=t.b);
+});
+col.innerText=c.toLocaleString()+" RWF";
+debt.innerText=d.toLocaleString()+" RWF";
+}
+}
+
+document.getElementById("fs-form").addEventListener("submit",e=>{
+e.preventDefault();
+let s={name:name.value,level:level.value,paid:0,t1:{},t2:{},t3:{}};
+let start=parseInt(term.value)-1;
+calc(s,start*fee(s.level)+(+money.value||0));
+students.push(s);save();render();
+
+fetch(e.target.action,{method:"POST",body:new FormData(e.target),headers:{Accept:"application/json"}});
+alert("Student registered & email sent");
+e.target.reset();
+show("home");
+});
+
+render();
+</script>
+
+</body>
+</html>
